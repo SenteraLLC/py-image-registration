@@ -19,6 +19,7 @@ srv/_*.py
 qtcreator-*
 *.user
 
+*.idea/
 
 *checkpoint.ipynb
 

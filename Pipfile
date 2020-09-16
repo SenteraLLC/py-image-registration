@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+sphinx = "*"
+sphinx-rtd-theme = "*"
+m2r = "*"
+pytest = "*"
+pre_commit = "*"
+
+[packages]
+multi_spect_tools = {editable = true,path = "."}
+
+[requires]
+python_version = "3.7"
