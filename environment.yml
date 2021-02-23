@@ -1,0 +1,20 @@
+name: image-registration
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  # dev dependencies
+  - sphinx
+  - sphinx_rtd_theme
+  - m2r
+  - pytest
+  - pre_commit
+  - pip
+  - pipenv
+  # main dependencies
+  - numpy
+  - opencv
+  - jupyter
+  - matplotlib
+  - pip:
+    - simpleitk

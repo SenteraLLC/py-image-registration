@@ -27,8 +27,18 @@ qtcreator-*
 # Emacs
 .#*
 
+# VS code
+.vscode/
+
 # Catkin custom files
 CATKIN_IGNORE
 
 Images
 .ipynb_checkpoints
+
+# Result folders
+Ouput/
+Failures/
+
+# Data folders
+2020-06-*

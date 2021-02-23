@@ -26,7 +26,7 @@ class data_set_handler:
 				return False
 		return True
 
-	def process_all_images(self, use_init_transform=True, update_from_previous=True):
+	def process_all_images(self, use_init_transform=True, update_from_previous=True, blend_channel=-1):
 		# loop through all the loaded image id's
 		for img_id in self.sitk_reg_obj.config.image_ids:
 			print("Aligning image ID: %i"%img_id)
@@ -53,14 +53,14 @@ class data_set_handler:
 					if not self.all_success(results.successful):
 						print("Alignment failed again, saving to bad alignment directory")
 						# this is a misaligned image...
-						multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], 3)
+						multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], blend_channel)
 						continue
 
 				# if the optimizer's final metric quality is above the min threshold
 				if self.all_success(results.successful):
 					print("Successul Alignment, saving result")
 					# this is an aligned image 
-					multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.output_path, file_name), [2,1,0], 3)
+					multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.output_path, file_name), [2,1,0], blend_channel)
 					# update the init transform if flag is set
 					if update_from_previous:
 						print("Updating initial transform from previous result")
@@ -68,7 +68,7 @@ class data_set_handler:
 				else:
 					print("Alignment Failed, Saving to bad alignment directory")
 					# this is a misaligned image without an initial transform
-					multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], 3)
+					multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], blend_channel)
 
 			except RuntimeError as e:
 				print("Runtime Error : ", e)
