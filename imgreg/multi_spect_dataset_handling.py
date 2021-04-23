@@ -4,9 +4,9 @@
 
 import os
 import time
-from multi_spect_tools import multi_spect_common
-from multi_spect_tools import sitk_multi_spect_registration
-from multi_spect_tools import multi_spect_image_io
+from imgreg import multi_spect_common
+from imgreg import sitk_multi_spect_registration
+from imgreg import multi_spect_image_io
 class data_set_handler:
 	def __init__(self, config_file, input_dataset_path=None):
 		self.init_transforms = None

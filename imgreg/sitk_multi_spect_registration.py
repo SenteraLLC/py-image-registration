@@ -7,8 +7,8 @@ import numpy as np
 import time
 from enum import Enum
 import configparser
-from multi_spect_tools import multi_spect_common
-from multi_spect_tools import multi_spect_reg_config
+from imgreg import multi_spect_common
+from imgreg import multi_spect_reg_config
 
 class alignment_results_t:
 	def __init__(self):
