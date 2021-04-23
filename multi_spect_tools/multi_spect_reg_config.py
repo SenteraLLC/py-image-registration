@@ -20,7 +20,7 @@ class camera_parameter_t():
 										[0.0,   0.0,  1.0]])
 
 class reg_config_t:
-	def __init__(self, config_file_path):
+	def __init__(self, config_file_path, input_dataset_path=None):
 		configDict = configparser.ConfigParser()
 		# read the config file
 		configDict.read(config_file_path)
@@ -42,7 +42,7 @@ class reg_config_t:
 		self.channel_paths = {}
 		# if the config file specifies settings for dataset processing
 		if 'PATHS' in configDict.keys():
-			self.input_dataset_path = str(configDict['PATHS']["INPUT_DATASET_PATH"])
+			self.input_dataset_path = input_dataset_path or str(configDict['PATHS']["INPUT_DATASET_PATH"])
 			self.output_dataset_path = str(configDict['PATHS']["OUTPUT_DATASET_PATH"])
 			self.failure_dataset_path = str(configDict['PATHS']["OUTPUT_FAILURE_PATH"])
 			# for each channel build the absolute path

@@ -25,9 +25,9 @@ class alignment_results_t:
 # this class implements multispectral registration using the Simple ITK Library
 class sitk_registration:
 	# The constructor takes a string parameter path to a configuration file
-	def __init__(self, config_file_name):
+	def __init__(self, config_file_name, input_dataset_path=None):
 		self.config_file_name = config_file_name
-		self.config = multi_spect_reg_config.reg_config_t(self.config_file_name)
+		self.config = multi_spect_reg_config.reg_config_t(self.config_file_name, input_dataset_path)
 		self.metric_vals = {}
 
 	def align(self, multi_ch_image, init_transforms=None, print_output=False):
