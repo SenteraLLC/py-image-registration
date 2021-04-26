@@ -66,7 +66,7 @@ class reg_config_t:
 			if not os.path.exists(self.output_dataset_path):
 				os.mkdir(self.output_dataset_path)
 			if not os.path.exists(self.failure_dataset_path):
-				os.mkdir(self.output_dataset_path)
+				os.mkdir(self.failure_dataset_path)
 			if self.image_extension == ".tif":
 				for c in self.ordered_channel_names:
 					output_path = os.path.join(self.output_dataset_path, c)
