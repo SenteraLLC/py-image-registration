@@ -20,7 +20,7 @@ class camera_parameter_t():
 										[0.0,   0.0,  1.0]])
 
 class reg_config_t:
-	def __init__(self, config_file_path, input_dataset_path=None):
+	def __init__(self, config_file_path, input_dataset_path=None, output_dataset_path=None, failure_dataset_path=None):
 		configDict = configparser.ConfigParser()
 		# read the config file
 		configDict.read(config_file_path)
@@ -43,11 +43,15 @@ class reg_config_t:
 		# if the config file specifies settings for dataset processing
 		if 'PATHS' in configDict.keys():
 			self.input_dataset_path = input_dataset_path or str(configDict['PATHS']["INPUT_DATASET_PATH"])
-			self.output_dataset_path = str(configDict['PATHS']["OUTPUT_DATASET_PATH"])
-			self.failure_dataset_path = str(configDict['PATHS']["OUTPUT_FAILURE_PATH"])
+			self.output_dataset_path = output_dataset_path or str(configDict['PATHS']["OUTPUT_DATASET_PATH"])
+			self.failure_dataset_path = failure_dataset_path or str(configDict['PATHS']["OUTPUT_FAILURE_PATH"])
+
+			# find input_dataset_path subdirectories
+			sub_dir_list = [f.name for f in os.scandir(self.input_dataset_path) if f.is_dir()]
+		
 			# for each channel build the absolute path
 			for name in self.ordered_channel_names:
-				sub_dir_path = str(configDict['PATHS'][name+"_SUBDIR"])
+				sub_dir_path = configDict['PATHS'].get(name+"_SUBDIR") or next((s for s in sub_dir_list if name in s), None)
 				sub_dir_path = os.path.join(self.input_dataset_path, sub_dir_path)
 				self.channel_paths[name] = sub_dir_path
 			# create a dictionary which maps image IDs to a dictionary which maps channel names to the path of the image for that channel
@@ -57,6 +61,20 @@ class reg_config_t:
 			# get the list of image IDs
 			self.image_ids = list(self.img_path_dict.keys())
 			self.image_ids.sort()
+
+			# create output directories if they don't exist
+			if not os.path.exists(self.output_dataset_path):
+				os.mkdir(self.output_dataset_path)
+			if not os.path.exists(self.failure_dataset_path):
+				os.mkdir(self.output_dataset_path)
+			if self.image_extension == ".tif":
+				for c in self.ordered_channel_names:
+					output_path = os.path.join(self.output_dataset_path, c)
+					failure_path = os.path.join(self.failure_dataset_path, c)
+					if not os.path.exists(output_path):
+						os.mkdir(output_path)
+					if not os.path.exists(failure_path):
+						os.mkdir(failure_path)
 
 		# Load Per-Channel Registration Settings
 		self.param_map = {}
@@ -88,6 +106,14 @@ class reg_config_t:
 		for ch_name in self.ordered_channel_names:
 			file_list = os.listdir(data_set_paths_dict[ch_name])
 			# print("Ch %s found %i files"%(ch_name, len(file_list)))
+			# identify image type
+			if file_list[0].endswith(".jpg"):
+				self.image_extension = ".jpg"
+			elif file_list[0].endswith(".tif") or file_list[0].endswith(".tiff"):
+				self.image_extension = ".tif"
+			else:
+				print(f"Image file {file_list[0]} is not of a supported type. (.jpg, ,tif, .tiff)")
+				raise TypeError
 			for file_name in file_list:
 				img_id = int(list(file_name.split('_'))[1])
 				#if img_id == 1:
