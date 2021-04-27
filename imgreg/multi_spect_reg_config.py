@@ -46,12 +46,9 @@ class reg_config_t:
 			self.output_dataset_path = output_dataset_path or str(configDict['PATHS']["OUTPUT_DATASET_PATH"])
 			self.failure_dataset_path = failure_dataset_path or str(configDict['PATHS']["OUTPUT_FAILURE_PATH"])
 
-			# find input_dataset_path subdirectories
-			sub_dir_list = [f.name for f in os.scandir(self.input_dataset_path) if f.is_dir()]
-		
 			# for each channel build the absolute path
 			for name in self.ordered_channel_names:
-				sub_dir_path = configDict['PATHS'].get(name+"_SUBDIR") or next((s for s in sub_dir_list if name in s), None)
+				sub_dir_path = configDict['PATHS'][name+"_SUBDIR"]
 				sub_dir_path = os.path.join(self.input_dataset_path, sub_dir_path)
 				self.channel_paths[name] = sub_dir_path
 			# create a dictionary which maps image IDs to a dictionary which maps channel names to the path of the image for that channel
@@ -68,9 +65,9 @@ class reg_config_t:
 			if not os.path.exists(self.failure_dataset_path):
 				os.mkdir(self.failure_dataset_path)
 			if self.image_extension == ".tif":
-				for c in self.ordered_channel_names:
-					output_path = os.path.join(self.output_dataset_path, c)
-					failure_path = os.path.join(self.failure_dataset_path, c)
+				for c in self.channel_paths.values():
+					output_path = os.path.join(self.output_dataset_path, os.path.split(c)[-1])
+					failure_path = os.path.join(self.failure_dataset_path, os.path.split(c)[-1])
 					if not os.path.exists(output_path):
 						os.mkdir(output_path)
 					if not os.path.exists(failure_path):

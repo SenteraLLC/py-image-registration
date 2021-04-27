@@ -56,7 +56,7 @@ class data_set_handler:
 						if self.sitk_reg_obj.config.image_extension == ".jpg":
 							multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], 3)
 						elif self.sitk_reg_obj.config.image_extension == ".tif":
-							multi_spect_image_io.save_tif_image(output_image, self.bad_alignment_output_path, file_name, self.sitk_reg_obj.config.ordered_channel_names)
+							multi_spect_image_io.save_tif_image(output_image, self.bad_alignment_output_path, file_name, [os.path.split(p)[-1] for p in self.sitk_reg_obj.config.channel_paths.values()])
 						continue
 
 				# if the optimizer's final metric quality is above the min threshold
@@ -66,7 +66,7 @@ class data_set_handler:
 					if self.sitk_reg_obj.config.image_extension == ".jpg":
 						multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.output_path, file_name), [2,1,0], 3)
 					elif self.sitk_reg_obj.config.image_extension == ".tif":
-						multi_spect_image_io.save_tif_image(output_image, self.output_path, file_name, self.sitk_reg_obj.config.ordered_channel_names)
+						multi_spect_image_io.save_tif_image(output_image, self.output_path, file_name, [os.path.split(p)[-1] for p in self.sitk_reg_obj.config.channel_paths.values()])
 					# update the init transform if flag is set
 					if update_from_previous:
 						print("Updating initial transform from previous result")
@@ -77,7 +77,7 @@ class data_set_handler:
 					if self.sitk_reg_obj.config.image_extension == ".jpg":
 						multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], 3)
 					elif self.sitk_reg_obj.config.image_extension == ".tif":
-						multi_spect_image_io.save_tif_image(output_image, self.bad_alignment_output_path, file_name, self.sitk_reg_obj.config.ordered_channel_names)
+						multi_spect_image_io.save_tif_image(output_image, self.bad_alignment_output_path, file_name, [os.path.split(p)[-1] for p in self.sitk_reg_obj.config.channel_paths.values()])
 
 			except RuntimeError as e:
 				print("Runtime Error : ", e)
