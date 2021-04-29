@@ -7,11 +7,14 @@ import cv2
 import numpy as np
 from PIL import Image
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 def save_tif_image(image, output_path, filename, channel_names):
 	h = image.shape[0]
 	w = image.shape[1]
-	print(image.shape)
+	logger.info(f"Saving tiff image of shape {image.shape}")
 	for i in range(len(channel_names)):
 		out_img = np.zeros(shape=(h,w,1))
 		out_img[:,:,0] = image[:,:,i]
@@ -22,7 +25,7 @@ def save_tif_image(image, output_path, filename, channel_names):
 def save_jpg_image(image, path, channel_list, blend_ch=-1):
 	h = image.shape[0]
 	w = image.shape[1]
-	print(image.shape)
+	logger.info(f"Saving jpg image of shape {image.shape}")
 	out_img = np.zeros(shape=(h,w,3))
 	for i in range(3):
 		if blend_ch != -1:
