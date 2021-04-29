@@ -4,14 +4,14 @@
 
 import os
 import time
-from multi_spect_tools import multi_spect_common
-from multi_spect_tools import sitk_multi_spect_registration
-from multi_spect_tools import multi_spect_image_io
+from imgreg import multi_spect_common
+from imgreg import sitk_multi_spect_registration
+from imgreg import multi_spect_image_io
 class data_set_handler:
-	def __init__(self, config_file):
+	def __init__(self, config_file, input_dataset_path=None, output_dataset_path=None, failure_dataset_path=None):
 		self.init_transforms = None
 		# Create a registration object
-		self.sitk_reg_obj = sitk_multi_spect_registration.sitk_registration(config_file)
+		self.sitk_reg_obj = sitk_multi_spect_registration.sitk_registration(config_file, input_dataset_path, output_dataset_path, failure_dataset_path)
 		# Show which image ID's were loaded
 		print("Valid Image IDs from dataset: \n", self.sitk_reg_obj.config.image_ids)
 		self.output_path = self.sitk_reg_obj.config.output_dataset_path
@@ -31,7 +31,7 @@ class data_set_handler:
 		for img_id in self.sitk_reg_obj.config.image_ids:
 			print("Aligning image ID: %i"%img_id)
 			# build the output file path
-			file_name = "aligned_" + str(img_id) + ".jpg"
+			file_name = "aligned_" + str(img_id) + self.sitk_reg_obj.config.image_extension
 			# Run the alignment in a try/catch, any exceptions will be printed but ignored
 			try:
 				# load the image from the path lookup
@@ -53,14 +53,20 @@ class data_set_handler:
 					if not self.all_success(results.successful):
 						print("Alignment failed again, saving to bad alignment directory")
 						# this is a misaligned image...
-						multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], 3)
+						if self.sitk_reg_obj.config.image_extension == ".jpg":
+							multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], 3)
+						elif self.sitk_reg_obj.config.image_extension == ".tif":
+							multi_spect_image_io.save_tif_image(output_image, self.bad_alignment_output_path, file_name, [os.path.split(p)[-1] for p in self.sitk_reg_obj.config.channel_paths.values()])
 						continue
 
 				# if the optimizer's final metric quality is above the min threshold
 				if self.all_success(results.successful):
 					print("Successul Alignment, saving result")
 					# this is an aligned image 
-					multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.output_path, file_name), [2,1,0], 3)
+					if self.sitk_reg_obj.config.image_extension == ".jpg":
+						multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.output_path, file_name), [2,1,0], 3)
+					elif self.sitk_reg_obj.config.image_extension == ".tif":
+						multi_spect_image_io.save_tif_image(output_image, self.output_path, file_name, [os.path.split(p)[-1] for p in self.sitk_reg_obj.config.channel_paths.values()])
 					# update the init transform if flag is set
 					if update_from_previous:
 						print("Updating initial transform from previous result")
@@ -68,7 +74,10 @@ class data_set_handler:
 				else:
 					print("Alignment Failed, Saving to bad alignment directory")
 					# this is a misaligned image without an initial transform
-					multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], 3)
+					if self.sitk_reg_obj.config.image_extension == ".jpg":
+						multi_spect_image_io.save_jpg_image(output_image, os.path.join(self.bad_alignment_output_path, file_name), [2,1,0], 3)
+					elif self.sitk_reg_obj.config.image_extension == ".tif":
+						multi_spect_image_io.save_tif_image(output_image, self.bad_alignment_output_path, file_name, [os.path.split(p)[-1] for p in self.sitk_reg_obj.config.channel_paths.values()])
 
 			except RuntimeError as e:
 				print("Runtime Error : ", e)
