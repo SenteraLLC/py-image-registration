@@ -18,7 +18,7 @@ def save_tif_image(image, output_path, filename, channel_names):
 	for i in range(len(channel_names)):
 		out_img = np.zeros(shape=(h,w,1))
 		out_img[:,:,0] = image[:,:,i]
-		out_img = out_img.astype(np.uint16)
+		out_img = out_img.astype(np.float16)
 		cv2.imwrite(os.path.join(output_path, channel_names[i], filename), out_img)
 
 
