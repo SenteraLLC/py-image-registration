@@ -28,6 +28,20 @@ The snippet below demonstrates the simplest possible usage while assuming that t
 
 Matplotlib is only used for image file I/O. If the built-in dataset processing is not utilized, this dependency is not required.
 
+## Install with `poetry` on Linux
+
+1) [Set up SSH](https://github.com/SenteraLLC/install-instructions/blob/master/ssh_setup.md)
+2) Install [pyenv](https://github.com/SenteraLLC/install-instructions/blob/master/pyenv.md) and [poetry](https://python-poetry.org/docs/#installation)
+3) Install package
+
+        git clone git@github.com:SenteraLLC/py-image-registration.git
+        cd py-image-registration
+        pyenv install $(cat .python-version)
+        poetry install
+        
+4) *Optional* Set up ``pre-commit`` to ensure all commits to adhere to **black** and **PEP8** style conventions.
+
+        poetry run pre-commit install
 
 ## Usage
 
