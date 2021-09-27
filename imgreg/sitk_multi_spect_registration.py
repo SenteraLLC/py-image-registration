@@ -9,6 +9,7 @@ from enum import Enum
 import configparser
 from imgreg import multi_spect_common
 from imgreg import multi_spect_reg_config
+import cv2
 
 class alignment_results_t:
 	def __init__(self):
@@ -173,6 +174,8 @@ class sitk_registration:
 		assert multi_ch_image.shape == aligned_multi_ch_image.shape
 		assert multi_ch_image.dtype == aligned_multi_ch_image.dtype
 
+		aligned_multi_ch_image = self.remove_empty_rows_and_columns(aligned_multi_ch_image)
+
 		return aligned_multi_ch_image, self.alignment_results
 
 	def align_channel(self, fixed_op, moving_op, fixed_of, moving_of, init_tf, channel_params, img_shape, seed):
@@ -243,3 +246,14 @@ class sitk_registration:
 			conv_val = self.reg_method.GetOptimizerConvergenceValue()
 			metric = self.reg_method.GetMetricValue()
 			self.metric_vals.append((opt_it, opt_pos, learn_rate, conv_val, metric))
+
+
+	def remove_empty_rows_and_columns(self, im):
+		print(f"im - shape: {im.shape}")
+		mask = ~np.isfinite(im)
+		print(f"mask - shape: {mask.shape}, sum: {mask.sum()}")
+		contains_nan = mask.sum(axis=2) != 0
+		print(f"contains_nan - shape: {contains_nan.shape}, sum: {contains_nan.sum()}")
+		#im = im[~contains_nan.all(axis=0)]
+		#im = im[~contains_nan.all(axis=1)]
+		return im

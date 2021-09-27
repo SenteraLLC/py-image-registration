@@ -43,11 +43,17 @@ def load_image_from_path_list(img_paths):
 		img = np.array(Image.open(path))
 		if len(img.shape) > 2:
 			img = img[:,:,0]
-		# if its the first channel
+		# if it's the first channel
 		if out_image is None:
 			h = img.shape[0]
 			w = img.shape[1]
 			c = len(img_paths)
 			out_image = np.zeros(shape=(h, w, c), dtype=np.float32)
-		out_image[:,:,i] = np.float32(img)
+		out_image[:,:,i] = np.float32(
+			img 
+			if 
+			img.shape[0] == h and img.shape[1] == w 
+			else 
+			cv2.resize(img, dsize=(w,h))
+		)
 	return out_image

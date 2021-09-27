@@ -3,10 +3,12 @@
 # All rights reserved.
 
 import os
-import time
-from imgreg import multi_spect_common
+import traceback
+
 from imgreg import sitk_multi_spect_registration
 from imgreg import multi_spect_image_io
+
+
 class data_set_handler:
 	def __init__(self, config_file, input_dataset_path=None, output_dataset_path=None, failure_dataset_path=None):
 		self.init_transforms = None
@@ -79,11 +81,6 @@ class data_set_handler:
 					elif self.sitk_reg_obj.config.image_extension == ".tif":
 						multi_spect_image_io.save_tif_image(output_image, self.bad_alignment_output_path, file_name, [os.path.split(p)[-1] for p in self.sitk_reg_obj.config.channel_paths.values()])
 
-			except RuntimeError as e:
-				print("Runtime Error : ", e)
-			except Exception as e:
-				print("Exception Occurred : ", e)
-				print("Failed to process image: ", img_id)
-			except :
-				print("Exception Occurred")
+			except:
+				traceback.print_exc()
 				print("Failed to process image: ", img_id)
