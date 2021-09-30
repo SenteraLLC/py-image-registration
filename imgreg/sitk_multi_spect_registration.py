@@ -5,8 +5,6 @@
 import SimpleITK as sitk
 import numpy as np
 import time
-from enum import Enum
-import configparser
 from imgreg import multi_spect_common
 from imgreg import multi_spect_reg_config
 
@@ -172,6 +170,12 @@ class sitk_registration:
 		# check that the output matches the input dimensions and datatype
 		assert multi_ch_image.shape == aligned_multi_ch_image.shape
 		assert multi_ch_image.dtype == aligned_multi_ch_image.dtype
+
+		# if enabled, remove all rows and columns that have a zero in at least one channel for every pixel
+		if self.config.remove_partial_edges:
+			any_zeroes = np.any(aligned_multi_ch_image == 0, axis=2)
+			aligned_multi_ch_image = aligned_multi_ch_image[~np.all(any_zeroes, axis=1)]
+			aligned_multi_ch_image = aligned_multi_ch_image[:, ~np.all(any_zeroes, axis=0)]
 
 		return aligned_multi_ch_image, self.alignment_results
 

@@ -37,7 +37,7 @@ def save_jpg_image(image, path, channel_list, blend_ch=-1):
 
 
 # creates a numpy array from a list of image paths 
-def load_image_from_path_list(img_paths):
+def load_image_from_path_list(img_paths, config):
 	out_image = None
 	for i,path in enumerate(img_paths):
 		img = np.array(Image.open(path))
@@ -49,5 +49,8 @@ def load_image_from_path_list(img_paths):
 			w = img.shape[1]
 			c = len(img_paths)
 			out_image = np.zeros(shape=(h, w, c), dtype=np.float32)
-		out_image[:,:,i] = np.float32(img)
+		if config.rgb_6x is not None and i == config.ordered_channel_names.index(config.rgb_6x):
+			out_image[:,:,i] = np.float32(cv2.resize(img, (w, h)))
+		else:
+			out_image[:,:,i] = np.float32(img)
 	return out_image

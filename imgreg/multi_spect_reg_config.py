@@ -98,6 +98,22 @@ class reg_config_t:
 		for ch_name in self.ordered_channel_names:
 			self.load_cam_config(configDict, ch_name)
 
+		if 'OPTIONS' in configDict.keys():
+			if 'remove_partial_edges' in configDict['OPTIONS'].keys():
+				self.remove_partial_edges = configDict['OPTIONS']["remove_partial_edges"] == "True"
+			else:
+				self.remove_partial_edges = False
+
+			if 'rgb_6x' in configDict['OPTIONS'].keys():
+				self.rgb_6x = self.clean_string(configDict['OPTIONS']["rgb_6x"])
+				# check that the rgb_6x channel name is also in the ordered channel names
+				assert self.rgb_6x in self.ordered_channel_names
+			else:
+				self.rgb_6x = None
+		else:
+			self.remove_partial_edges = False
+			self.rgb_6x = None
+
 	def load_image_dict(self, data_set_paths_dict):
 		self.img_path_dict = {}
 		for ch_name in self.ordered_channel_names:
@@ -105,14 +121,16 @@ class reg_config_t:
 			# print("Ch %s found %i files"%(ch_name, len(file_list)))
 			# identify image type
 			if file_list[0].endswith(".jpg"):
-				self.image_extension = ".jpg"
+				if ch_name == self.fixed_channel_name:
+					self.image_extension = ".jpg"
 			elif file_list[0].endswith(".tif") or file_list[0].endswith(".tiff"):
-				self.image_extension = ".tif"
+				if ch_name == self.fixed_channel_name:
+					self.image_extension = ".tif"
 			else:
 				print(f"Image file {file_list[0]} is not of a supported type. (.jpg, ,tif, .tiff)")
 				raise TypeError
 			for file_name in file_list:
-				img_id = int(list(file_name.split('_'))[1])
+				img_id = int(list(file_name.replace('.', '_').split('_'))[1])
 				#if img_id == 1:
 				#	 print("Found ID 1 for channel : ", ch_name)
 				if img_id not in self.img_path_dict.keys():
