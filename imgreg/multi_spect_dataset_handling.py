@@ -3,8 +3,10 @@
 # All rights reserved.
 
 import os
+import cv2
 from imgreg import sitk_multi_spect_registration
 from imgreg import multi_spect_image_io
+
 class data_set_handler:
 	def __init__(self, config_file, input_dataset_path=None, output_dataset_path=None, failure_dataset_path=None):
 		self.init_transforms = None
@@ -24,18 +26,36 @@ class data_set_handler:
 				return False
 		return True
 
-	def save_image(self, output_image, file_name, output_path):
+	def save_image(self, output_image, file_name, output_path, img_id):
 		if self.sitk_reg_obj.config.image_extension == ".jpg":
 			multi_spect_image_io.save_jpg_image(output_image, os.path.join(output_path, file_name), [2,1,0], 3)
 		elif self.sitk_reg_obj.config.image_extension == ".tif":
-			multi_spect_image_io.save_tif_image(output_image, output_path, file_name, [os.path.split(p)[-1] for p in self.sitk_reg_obj.config.channel_paths.values()])
+			# copy channel paths dict in case it's edited by rgb_6x code
+			channel_paths = self.sitk_reg_obj.config.channel_paths.copy()
+			if self.sitk_reg_obj.config.rgb_6x is not None:
+				# load original RGB image
+				print("1")
+				rgb_image = multi_spect_image_io.load_image(
+					self.sitk_reg_obj.config.get_img_paths(img_id)[
+						self.sitk_reg_obj.config.ordered_channel_names.index(self.sitk_reg_obj.config.rgb_6x)
+					]
+				)
+				print("2")
+				# align/crop
+				rgb_image = self.sitk_reg_obj.process_6x_rgb(rgb_image)
+				# output RGB image as .jpg
+				print("3")
+				rgb_path = channel_paths.pop(self.sitk_reg_obj.config.rgb_6x)
+				rgb_subdir = os.path.split(rgb_path)[-1]
+				cv2.imwrite(os.path.join(output_path, rgb_subdir, file_name) + ".jpg", rgb_image)
+			multi_spect_image_io.save_tif_image(output_image, output_path, file_name, [os.path.split(p)[-1] for p in channel_paths.values()])
 
 	def process_all_images(self, use_init_transform=True, update_from_previous=True):
 		# loop through all the loaded image id's
 		for img_id in self.sitk_reg_obj.config.image_ids:
 			print("Aligning image ID: %i"%img_id)
 			# build the output file path
-			file_name = "aligned_" + str(img_id) + self.sitk_reg_obj.config.image_extension
+			file_name = "aligned_" + str(img_id)
 			# Run the alignment in a try/catch, any exceptions will be printed but ignored
 			try:
 				# load the image from the path lookup
@@ -57,14 +77,14 @@ class data_set_handler:
 					if not self.all_success(results.successful):
 						print("Alignment failed again, saving to bad alignment directory")
 						# this is a misaligned image...
-						self.save_image(output_image, file_name, self.bad_alignment_output_path)
+						self.save_image(output_image, file_name, self.bad_alignment_output_path, img_id)
 						continue
 
 				# if the optimizer's final metric quality is above the min threshold
 				if self.all_success(results.successful):
 					print("Successul Alignment, saving result")
 					# this is an aligned image 
-					self.save_image(output_image, file_name, self.output_path)
+					self.save_image(output_image, file_name, self.output_path, img_id)
 					# update the init transform if flag is set
 					if update_from_previous:
 						print("Updating initial transform from previous result")
@@ -72,7 +92,7 @@ class data_set_handler:
 				else:
 					print("Alignment Failed, Saving to bad alignment directory")
 					# this is a misaligned image without an initial transform
-					self.save_image(output_image, file_name, self.bad_alignment_output_path)
+					self.save_image(output_image, file_name, self.bad_alignment_output_path, img_id)
 
 			except RuntimeError as e:
 				print("Runtime Error : ", e)

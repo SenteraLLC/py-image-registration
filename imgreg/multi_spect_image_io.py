@@ -2,7 +2,6 @@
 # Copyright (c) 2020, Kostas Alexis, Frank Mascarich, University of Nevada, Reno.
 # All rights reserved.
 
-import matplotlib.image as plt_image
 import cv2
 import numpy as np
 from PIL import Image
@@ -18,8 +17,7 @@ def save_tif_image(image, output_path, filename, channel_names):
 	for i in range(len(channel_names)):
 		out_img = np.zeros(shape=(h,w,1))
 		out_img[:,:,0] = image[:,:,i]
-		out_img = out_img.astype(np.float16)
-		cv2.imwrite(os.path.join(output_path, channel_names[i], filename), out_img)
+		cv2.imwrite(os.path.join(output_path, channel_names[i], filename) + ".tif", out_img)
 
 
 def save_jpg_image(image, path, channel_list, blend_ch=-1):
@@ -33,7 +31,7 @@ def save_jpg_image(image, path, channel_list, blend_ch=-1):
 		else:
 			out_img[:,:,i] = image[:,:,channel_list[i]]
 	out_img = out_img.astype(np.uint8)
-	cv2.imwrite(path, out_img)
+	cv2.imwrite(path + ".jpg", out_img)
 
 
 # creates a numpy array from a list of image paths 
@@ -50,7 +48,15 @@ def load_image_from_path_list(img_paths, config):
 			c = len(img_paths)
 			out_image = np.zeros(shape=(h, w, c), dtype=np.float32)
 		if config.rgb_6x is not None and i == config.ordered_channel_names.index(config.rgb_6x):
-			out_image[:,:,i] = np.float32(cv2.resize(img, (w, h)))
+			out_image[:,:,i] = np.float32(cv2.resize(img, (w, h), interpolation=cv2.INTER_AREA))
 		else:
 			out_image[:,:,i] = np.float32(img)
 	return out_image
+
+# simple loading of 3 channel image with reversed channels
+def load_image(path):
+	img = np.array(Image.open(path))
+	ch1 = img[:,:,0].copy()
+	img[:,:,0] = img[:,:,2]
+	img[:,:,2] = ch1
+	return np.array(img)

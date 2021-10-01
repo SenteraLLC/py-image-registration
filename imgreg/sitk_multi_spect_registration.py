@@ -2,11 +2,14 @@
 # Copyright (c) 2020, Kostas Alexis, Frank Mascarich, University of Nevada, Reno.
 # All rights reserved.
 
-import SimpleITK as sitk
-import numpy as np
+import math
 import time
-from imgreg import multi_spect_common
-from imgreg import multi_spect_reg_config
+
+import numpy as np
+import SimpleITK as sitk
+
+from imgreg import multi_spect_common, multi_spect_reg_config
+
 
 class alignment_results_t:
 	def __init__(self):
@@ -247,3 +250,46 @@ class sitk_registration:
 			conv_val = self.reg_method.GetOptimizerConvergenceValue()
 			metric = self.reg_method.GetMetricValue()
 			self.metric_vals.append((opt_it, opt_pos, learn_rate, conv_val, metric))
+
+
+	def process_6x_rgb(self, image):
+		left_bounds 	= {}
+		top_bounds 		= {}
+		right_bounds	= {}
+		bottom_bounds	= {}
+		# find average location for each boundary and scale up to RGB resolution
+		ratio = (5184.0 / 1904.0) / 2.0
+		for ch, points in self.alignment_results.corner_points.items():
+			left_bounds[ch] 	= math.ceil((points[0][0] + points[3][0]) * ratio)
+			top_bounds[ch] 		= math.ceil((points[0][1] + points[1][1]) * ratio)
+			right_bounds[ch]	= math.floor((points[1][0] + points[2][0]) * ratio)
+			bottom_bounds[ch]	= math.floor((points[2][1] + points[3][1]) * ratio)
+		if self.config.remove_partial_edges:
+			# find innermost boundaries across all channels
+			max_left	= max(left_bounds.values())
+			max_top		= max(top_bounds.values())
+			min_right	= min(right_bounds.values())
+			min_bottom	= min(bottom_bounds.values())
+			# crop image to these boundaries
+			image = image[
+				max_top-top_bounds[self.config.rgb_6x]:min_bottom-bottom_bounds[self.config.rgb_6x] or None,
+				max_left-left_bounds[self.config.rgb_6x]:min_right-right_bounds[self.config.rgb_6x] or None,
+				:
+			]
+		else:
+			# crop image to boundaries of fixed channel
+			image = image[
+				max(-top_bounds[self.config.rgb_6x], 0):min(3888-bottom_bounds[self.config.rgb_6x], 0) or None,
+				max(-left_bounds[self.config.rgb_6x], 0):min(5184-right_bounds[self.config.rgb_6x], 0) or None,
+				:
+			]
+			# fill zeroes to align all corners with those of fixed channel
+			image = np.pad(
+				image,
+				(
+					(max(top_bounds[self.config.rgb_6x], 0), max(3888-bottom_bounds[self.config.rgb_6x], 0)),
+					(max(left_bounds[self.config.rgb_6x], 0), max(5184-right_bounds[self.config.rgb_6x], 0)),
+					(0,0)
+				)
+			)
+		return image
