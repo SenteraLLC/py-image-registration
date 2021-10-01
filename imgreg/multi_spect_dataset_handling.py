@@ -34,17 +34,14 @@ class data_set_handler:
 			channel_paths = self.sitk_reg_obj.config.channel_paths.copy()
 			if self.sitk_reg_obj.config.rgb_6x is not None:
 				# load original RGB image
-				print("1")
 				rgb_image = multi_spect_image_io.load_image(
 					self.sitk_reg_obj.config.get_img_paths(img_id)[
 						self.sitk_reg_obj.config.ordered_channel_names.index(self.sitk_reg_obj.config.rgb_6x)
 					]
 				)
-				print("2")
 				# align/crop
 				rgb_image = self.sitk_reg_obj.process_6x_rgb(rgb_image)
 				# output RGB image as .jpg
-				print("3")
 				rgb_path = channel_paths.pop(self.sitk_reg_obj.config.rgb_6x)
 				rgb_subdir = os.path.split(rgb_path)[-1]
 				cv2.imwrite(os.path.join(output_path, rgb_subdir, file_name) + ".jpg", rgb_image)

@@ -91,6 +91,10 @@ _.ini_ files are organized by sections:
     4. **<CH_NAME>_PATH** : The name of the directory within the **INPUT_DATASET_PATH** containing the channel's images. 
     CH_NAME must match the name given in the **REGISTRATION** parameters above.
 
+5. **OPTIONS** - Optional parameters for enabling extra processing steps.
+    1. **remove_partial_edges** : True to enable cropping of edges that do not include data from every channel
+    2. **rgb_6x** : the name of a channel given in **REGISTRATION** that should be processed as 6x RGB.
+
 ### Alignment Results
 Alongside the returned image, an object is returned containing the results of the alignment process. The object contains a set of dictionaries in which channel names are used as keys to sets of results for each channel. Specifically, the object contains the following member dictionaries:
 1. 	opt_stop_cond 		- a string describing the optimizer's final stopping condition.
