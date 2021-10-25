@@ -48,7 +48,7 @@ def load_image_from_path_list(img_paths, config):
 			c = len(img_paths)
 			out_image = np.zeros(shape=(h, w, c), dtype=np.float32)
 		if config.rgb_6x is not None and i == config.ordered_channel_names.index(config.rgb_6x):
-			out_image[:,:,i] = np.float32(cv2.resize(img, (w, h), interpolation=cv2.INTER_AREA))
+			out_image[:,:,i] = np.float32(cv2.resize(img, (w, h), interpolation=cv2.INTER_NEAREST))
 		else:
 			out_image[:,:,i] = np.float32(img)
 	return out_image
