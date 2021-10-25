@@ -13,7 +13,7 @@ The snippet below demonstrates the simplest possible usage while assuming that t
     # import the multispectral registration package
     from multi_spect_tools import sitk_multi_spect_registration 
     # Create a registration object
-    sitk_reg_obj = sitk_multi_spect_registration.sitk_registration("cfg/reg_config.ini")
+    sitk_reg_obj = sitk_multi_spect_registration.SitkRegistration("cfg/reg_config.ini")
     # align the input image
     aligned_image, results = sitk_reg_object.align(input_image)
  ```
@@ -131,7 +131,7 @@ python3 multispect_reg.py
 This script contains 3 lines:
 ```python
 from multi_spect_tools import multi_spect_dataset_handling
-dataset_handler = multi_spect_dataset_handling.data_set_handler("cfg/reg_config.ini")
+dataset_handler = multi_spect_dataset_handling.DataSetHandler("cfg/reg_config.ini")
 dataset_handler.process_all_images(use_init_transform=True, update_from_previous=True)
 ```
 This script will import the necessary libraries, load the configuration found in the 
