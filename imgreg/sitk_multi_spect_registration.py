@@ -366,10 +366,10 @@ class SitkRegistration:
             bottom_bounds[ch] = math.floor((points[2][1] + points[3][1]) * ratio)
         if self.config.remove_partial_edges:
             # find innermost boundaries across all channels
-            max_left = max(left_bounds.values())
-            max_top = max(top_bounds.values())
-            min_right = min(right_bounds.values())
-            min_bottom = min(bottom_bounds.values())
+            max_left = max(max(left_bounds.values()), 0)
+            max_top = max(max(top_bounds.values()), 0)
+            min_right = min(min(right_bounds.values()), 5184)
+            min_bottom = min(min(bottom_bounds.values()), 3888)
             # crop image to these boundaries
             image = image[
                 max_top
