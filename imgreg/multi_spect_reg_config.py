@@ -191,7 +191,9 @@ class RegConfigT:
                 )
                 raise TypeError
             for file_name in file_list:
-                img_id = int(list(file_name.replace(".", "_").split("_"))[1])
+                img_str = list(file_name.replace(".", "_").split("_"))[2]
+                print(img_str)
+                img_id = int(img_str)
                 # if img_id == 1:
                 # 	 print("Found ID 1 for channel : ", ch_name)
                 if img_id not in self.img_path_dict.keys():

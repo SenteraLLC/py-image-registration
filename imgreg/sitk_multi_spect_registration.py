@@ -9,6 +9,7 @@ All rights reserved.
 import math
 import time
 
+import cv2
 import numpy as np
 import SimpleITK as Sitk
 
@@ -353,6 +354,15 @@ class SitkRegistration:
 
     def process_6x_rgb(self, image):
         """Remove edges of RGB channel based on alignment results."""
+        # undistort image
+        image = cv2.undistort(
+            image,
+            np.array([[714.0, 0.0, 714.0], [0.0, 952.0, 952.0], [0.0, 0.0, 1.0]]),
+            np.array([0.0, 0.0, 0.0, 0.0, 0.0]),
+            None,
+            np.array([[714.0, 0.0, 714.0], [0.0, 952.0, 952.0], [0.0, 0.0, 1.0]]),
+        )
+
         left_bounds = {}
         top_bounds = {}
         right_bounds = {}

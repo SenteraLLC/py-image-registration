@@ -6,11 +6,21 @@ Copyright (c) 2020, Kostas Alexis, Frank Mascarich, University of Nevada, Reno.
 All rights reserved.
 """
 
+import logging
 import os
+import traceback
 
 import cv2
+import imgparse
+import imgread
+import quicktile
 
 from imgreg import multi_spect_image_io, sitk_multi_spect_registration
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = imgread.logging.FileHandler("log", print_console=True, level="INFO")
+logger.addHandler(handler)
 
 
 class DataSetHandler:
@@ -45,38 +55,70 @@ class DataSetHandler:
                 return False
         return True
 
+    def _qt_helper(self, path):
+        """Generate frame and homography before quicktiling image."""
+        frame = quicktile.Frame(path)
+        homography = quicktile.calculate_homography(frame)
+        quicktile.projection.quicktile_single_image(
+            frame, homography, path, compress=False, no_mask=True
+        )
+
     def save_image(self, output_image, file_name, output_path, img_id):
         """Save images in jpg or tif format."""
-        if self.sitk_reg_obj.config.image_extension == ".jpg":
-            multi_spect_image_io.save_jpg_image(
-                output_image, os.path.join(output_path, file_name), [2, 1, 0], 3
+        img_paths = self.sitk_reg_obj.config.get_img_paths(img_id)
+        fixed_path = img_paths[
+            self.sitk_reg_obj.config.ordered_channel_names.index(
+                self.sitk_reg_obj.config.fixed_channel_name
             )
+        ]
+        fixed_channel_exif_data = imgparse.get_exif_data(fixed_path)
+        # for key, val in fixed_channel_exif_data.items():
+        #    print(f"{key}: {val}")
+        # fixed_channel_xmp_data = imgparse.get_xmp_data(fixed_path)
+        # print(fixed_channel_xmp_data)
+        if self.sitk_reg_obj.config.image_extension == ".jpg":
+            output_file_path = os.path.join(output_path, file_name)
+            multi_spect_image_io.save_jpg_image(
+                output_image, output_file_path, [2, 1, 0], 3
+            )
+            multi_spect_image_io.copy_exif(fixed_path, output_file_path, "exiftool")
+            self._qt_helper(output_file_path)
         elif self.sitk_reg_obj.config.image_extension == ".tif":
             # copy channel paths dict in case it's edited by rgb_6x code
             channel_paths = self.sitk_reg_obj.config.channel_paths.copy()
             if self.sitk_reg_obj.config.rgb_6x is not None:
+                rgb_input_path = self.sitk_reg_obj.config.get_img_paths(img_id)[
+                    self.sitk_reg_obj.config.ordered_channel_names.index(
+                        self.sitk_reg_obj.config.rgb_6x
+                    )
+                ]
                 # load original RGB image
-                rgb_image = multi_spect_image_io.load_bgr_image(
-                    self.sitk_reg_obj.config.get_img_paths(img_id)[
-                        self.sitk_reg_obj.config.ordered_channel_names.index(
-                            self.sitk_reg_obj.config.rgb_6x
-                        )
-                    ]
-                )
+                rgb_image = multi_spect_image_io.load_bgr_image(rgb_input_path)
                 # align/crop
                 rgb_image = self.sitk_reg_obj.process_6x_rgb(rgb_image)
                 # output RGB image as .jpg
                 rgb_path = channel_paths.pop(self.sitk_reg_obj.config.rgb_6x)
                 rgb_subdir = os.path.split(rgb_path)[-1]
-                cv2.imwrite(
-                    os.path.join(output_path, rgb_subdir, file_name) + ".jpg", rgb_image
+                rgb_file_path = (
+                    os.path.join(output_path, rgb_subdir, file_name) + ".jpg"
                 )
-            multi_spect_image_io.save_tif_image(
-                output_image,
-                output_path,
-                file_name,
-                [os.path.split(p)[-1] for p in channel_paths.values()],
-            )
+                cv2.imwrite(rgb_file_path, rgb_image)
+                multi_spect_image_io.copy_exif(
+                    rgb_input_path, rgb_file_path, "exiftool", fixed_channel_exif_data
+                )
+                self._qt_helper(rgb_file_path)
+            output_file_paths = [
+                os.path.join(output_path, os.path.split(p)[-1], file_name) + ".tif"
+                for p in channel_paths.values()
+            ]
+            multi_spect_image_io.save_tif_image(output_image, output_file_paths)
+            for i, ofp in enumerate(output_file_paths):
+                multi_spect_image_io.copy_exif(
+                    img_paths[i], ofp, "exiftool", fixed_channel_exif_data
+                )
+                # fixed_channel_xmp_data = imgparse.get_xmp_data(ofp)
+                # print(fixed_channel_xmp_data)
+                self._qt_helper(ofp)
 
     def process_all_images(self, use_init_transform=True, update_from_previous=True):
         """Perform registration on all images."""
@@ -142,6 +184,7 @@ class DataSetHandler:
                     )
 
             except RuntimeError as e:
+                print(traceback.format_exc())
                 print("Runtime Error : ", e)
             except Exception as e:
                 print("Exception Occurred : ", e)

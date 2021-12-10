@@ -7,7 +7,7 @@ All rights reserved.
 """
 
 import logging
-import os
+import subprocess
 
 import cv2
 import numpy as np
@@ -16,17 +16,16 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 
 
-def save_tif_image(image, output_path, filename, channel_names):
+def save_tif_image(image, file_paths):
     """Save single channel tif image."""
     h = image.shape[0]
     w = image.shape[1]
     logger.info(f"Saving tiff image of shape {image.shape}")
-    for i in range(len(channel_names)):
-        out_img = np.zeros(shape=(h, w, 1))
+    for i in range(len(file_paths)):
+        out_img = np.zeros(shape=(h, w, 1), dtype=np.float32)
         out_img[:, :, 0] = image[:, :, i]
-        cv2.imwrite(
-            os.path.join(output_path, channel_names[i], filename) + ".tif", out_img
-        )
+        print(out_img.dtype)
+        cv2.imwrite(file_paths[i], out_img)
 
 
 def save_jpg_image(image, path, channel_list, blend_ch=-1):
@@ -79,3 +78,56 @@ def load_bgr_image(path):
     img[:, :, 0] = img[:, :, 2]
     img[:, :, 2] = ch1
     return np.array(img)
+
+
+def copy_exif(source_path, dest_path, exiftool_path, fixed_channel_exif_data=None):
+    """Copy over all metadata exactly as it is."""
+    copy_command = subprocess.run(
+        [
+            exiftool_path,
+            "-overwrite_original",
+            "-TagsFromFile",
+            source_path,
+            dest_path,
+            "-xmp",
+            "-exif",
+            "-all",
+        ],
+        capture_output=True,
+    )
+
+    if copy_command.returncode != 0:
+        raise ValueError("Exiftool copy command did not run successfully.")
+
+    if fixed_channel_exif_data is None:
+        return
+
+    def _convert_to_degrees(value):
+        """
+        Convert the GPS coordinates stored in the EXIF to degress in float format.
+
+        :param value:
+        :type value: exifread.utils.Ratio
+        :rtype: float
+        """
+        d = float(value.values[0].num) / float(value.values[0].den)
+        m = float(value.values[1].num) / float(value.values[1].den)
+        s = float(value.values[2].num) / float(value.values[2].den)
+
+        return d + (m / 60.0) + (s / 3600.0)
+
+    latitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLatitude"])
+    longitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLongitude"])
+    print(f"SETTING COORDS TO {latitude}/{longitude}")
+    edit_command = subprocess.run(
+        [
+            exiftool_path,
+            dest_path,
+            "-overwrite_original",
+            f"-gpslatitude={latitude}",
+            f"-gpslongitude={longitude}",
+        ]
+    )
+
+    if edit_command.returncode != 0:
+        raise ValueError("Exiftool edit command did not run successfully.")
