@@ -6,21 +6,14 @@ Copyright (c) 2020, Kostas Alexis, Frank Mascarich, University of Nevada, Reno.
 All rights reserved.
 """
 
-import logging
 import os
 import traceback
 
 import cv2
 import imgparse
-import imgread
 import quicktile
 
 from imgreg import multi_spect_image_io, sitk_multi_spect_registration
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = imgread.logging.FileHandler("log", print_console=True, level="INFO")
-logger.addHandler(handler)
 
 
 class DataSetHandler:
@@ -72,10 +65,6 @@ class DataSetHandler:
             )
         ]
         fixed_channel_exif_data = imgparse.get_exif_data(fixed_path)
-        # for key, val in fixed_channel_exif_data.items():
-        #    print(f"{key}: {val}")
-        # fixed_channel_xmp_data = imgparse.get_xmp_data(fixed_path)
-        # print(fixed_channel_xmp_data)
         if self.sitk_reg_obj.config.image_extension == ".jpg":
             output_file_path = os.path.join(output_path, file_name)
             multi_spect_image_io.save_jpg_image(
@@ -116,8 +105,6 @@ class DataSetHandler:
                 multi_spect_image_io.copy_exif(
                     img_paths[i], ofp, "exiftool", fixed_channel_exif_data
                 )
-                # fixed_channel_xmp_data = imgparse.get_xmp_data(ofp)
-                # print(fixed_channel_xmp_data)
                 self._qt_helper(ofp)
 
     def process_all_images(self, use_init_transform=True, update_from_previous=True):

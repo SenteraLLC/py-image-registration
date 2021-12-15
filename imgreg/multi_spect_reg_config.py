@@ -191,11 +191,11 @@ class RegConfigT:
                 )
                 raise TypeError
             for file_name in file_list:
-                img_str = list(file_name.replace(".", "_").split("_"))[2]
-                print(img_str)
-                img_id = int(img_str)
-                # if img_id == 1:
-                # 	 print("Found ID 1 for channel : ", ch_name)
+                img_str_list = list(file_name.replace(".", "_").split("_"))
+                for img_str in img_str_list:
+                    if img_str.isdigit:
+                        img_id = int(img_str)
+                        break
                 if img_id not in self.img_path_dict.keys():
                     self.img_path_dict[img_id] = {}
                 self.img_path_dict[img_id][ch_name] = os.path.join(

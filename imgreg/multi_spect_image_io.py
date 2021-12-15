@@ -17,14 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 def save_tif_image(image, file_paths):
-    """Save single channel tif image."""
+    """Save single channel tif images."""
     h = image.shape[0]
     w = image.shape[1]
     logger.info(f"Saving tiff image of shape {image.shape}")
     for i in range(len(file_paths)):
         out_img = np.zeros(shape=(h, w, 1), dtype=np.float32)
         out_img[:, :, 0] = image[:, :, i]
-        print(out_img.dtype)
         cv2.imwrite(file_paths[i], out_img)
 
 
