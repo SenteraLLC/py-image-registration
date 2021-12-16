@@ -193,7 +193,7 @@ class RegConfigT:
             for file_name in file_list:
                 img_str_list = list(file_name.replace(".", "_").split("_"))
                 for img_str in img_str_list:
-                    if img_str.isdigit:
+                    if img_str.isdigit():
                         img_id = int(img_str)
                         break
                 if img_id not in self.img_path_dict.keys():

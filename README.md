@@ -30,6 +30,11 @@ Matplotlib is only used for image file I/O. If the built-in dataset processing i
 
 ## Install with `poetry` on Linux
 
+### Prerequisites
+
+i) Install OpenCV
+ii) Install exiftool
+
 1) [Set up SSH](https://github.com/SenteraLLC/install-instructions/blob/master/ssh_setup.md)
 2) Install [pyenv](https://github.com/SenteraLLC/install-instructions/blob/master/pyenv.md) and [poetry](https://python-poetry.org/docs/#installation)
 3) Install package
