@@ -4,6 +4,7 @@ Common utilities for Simple ITK image registration.
 multi_spect_common.py
 Copyright (c) 2020, Kostas Alexis, Frank Mascarich, Autonomous Robots Lab, University of Nevada, Reno.
 All rights reserved.
+Code revision 2021, Sam Williams, Sentera Inc.
 """
 
 import os

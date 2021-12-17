@@ -4,6 +4,7 @@ Display images and metrics.
 multi_spect_plotting_utils.py
 Copyright (c) 2020, Kostas Alexis, Frank Mascarich, University of Nevada, Reno.
 All rights reserved.
+Code revision 2021, Sam Williams, Sentera Inc.
 """
 
 import matplotlib.pyplot as plt

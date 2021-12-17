@@ -4,6 +4,7 @@ Handle Simple ITK image resgistration.
 sitk_multi_spect_registration.py
 Copyright (c) 2020, Kostas Alexis, Frank Mascarich, University of Nevada, Reno.
 All rights reserved.
+Code revision 2021, Sam Williams, Sentera Inc.
 """
 
 import math
