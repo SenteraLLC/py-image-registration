@@ -13,7 +13,7 @@ The snippet below demonstrates the simplest possible usage while assuming that t
     # import the multispectral registration package
     from multi_spect_tools import sitk_multi_spect_registration 
     # Create a registration object
-    sitk_reg_obj = sitk_multi_spect_registration.sitk_registration("cfg/reg_config.ini")
+    sitk_reg_obj = sitk_multi_spect_registration.SitkRegistration("cfg/reg_config.ini")
     # align the input image
     aligned_image, results = sitk_reg_object.align(input_image)
  ```
@@ -29,6 +29,11 @@ The snippet below demonstrates the simplest possible usage while assuming that t
 Matplotlib is only used for image file I/O. If the built-in dataset processing is not utilized, this dependency is not required.
 
 ## Install with `poetry` on Linux
+
+### Prerequisites
+
+i) Install OpenCV
+ii) Install exiftool
 
 1) [Set up SSH](https://github.com/SenteraLLC/install-instructions/blob/master/ssh_setup.md)
 2) Install [pyenv](https://github.com/SenteraLLC/install-instructions/blob/master/pyenv.md) and [poetry](https://python-poetry.org/docs/#installation)
@@ -91,6 +96,10 @@ _.ini_ files are organized by sections:
     4. **<CH_NAME>_PATH** : The name of the directory within the **INPUT_DATASET_PATH** containing the channel's images. 
     CH_NAME must match the name given in the **REGISTRATION** parameters above.
 
+5. **OPTIONS** - Optional parameters for enabling extra processing steps.
+    1. **remove_partial_edges** : True to enable cropping of edges that do not include data from every channel
+    2. **rgb_6x** : the name of a channel given in **REGISTRATION** that should be processed as 6x RGB.
+
 ### Alignment Results
 Alongside the returned image, an object is returned containing the results of the alignment process. The object contains a set of dictionaries in which channel names are used as keys to sets of results for each channel. Specifically, the object contains the following member dictionaries:
 1. 	opt_stop_cond 		- a string describing the optimizer's final stopping condition.
@@ -127,7 +136,7 @@ python3 multispect_reg.py
 This script contains 3 lines:
 ```python
 from multi_spect_tools import multi_spect_dataset_handling
-dataset_handler = multi_spect_dataset_handling.data_set_handler("cfg/reg_config.ini")
+dataset_handler = multi_spect_dataset_handling.DataSetHandler("cfg/reg_config.ini")
 dataset_handler.process_all_images(use_init_transform=True, update_from_previous=True)
 ```
 This script will import the necessary libraries, load the configuration found in the 
