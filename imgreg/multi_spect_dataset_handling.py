@@ -51,7 +51,7 @@ class DataSetHandler:
 
     def _qt_helper(self, path):
         """Generate frame and homography before quicktiling image."""
-        frame = quicktile.Frame(path)
+        frame = quicktile.Frame(path, use_calibrated_focal_length=True)
         homography = quicktile.calculate_homography(frame)
         quicktile.projection.quicktile_single_image(
             frame, homography, path, compress=False, no_mask=True
