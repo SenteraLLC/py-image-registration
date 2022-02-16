@@ -10,7 +10,6 @@ numpy = "^1.19.3"
 opencv-python = "^4.5.1"
 SimpleITK = "^2.0.2"
 matplotlib = "^3.4.1"
-quicktile = {git = "ssh://git@github.com/SenteraLLC/quicktile-core.git", tag = "v2.4.2"}
 imgparse = {git = "ssh://git@github.com/SenteraLLC/py-image-metadata-parser.git", tag = "v1.11.0"}
 
 [tool.poetry.dev-dependencies]
