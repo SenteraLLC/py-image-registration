@@ -314,7 +314,7 @@ class SitkRegistration:
         if init_tf is None:
             init_tf = Sitk.AffineTransform(2)
         # inPlace doesn't have to be false if reg_method is re-constructed for each channel
-        reg_method.SetInitialTransform(init_tf, inPlace=False)
+        reg_method.SetInitialTransform(init_tf)
         reg_method.SetOptimizerScalesFromPhysicalShift()
         # reg_method.SetOptimizerScales([1e-5,1e-5,1e-5,1e-5,0.5,0.5])
 
