@@ -80,6 +80,21 @@ def load_bgr_image(path):
     return np.array(img)
 
 
+def _convert_to_degrees(value):
+    """
+    Convert the GPS coordinates stored in the EXIF to degress in float format.
+
+    :param value:
+    :type value: exifread.utils.Ratio
+    :rtype: float
+    """
+    d = float(value.values[0].num) / float(value.values[0].den)
+    m = float(value.values[1].num) / float(value.values[1].den)
+    s = float(value.values[2].num) / float(value.values[2].den)
+
+    return d + (m / 60.0) + (s / 3600.0)
+
+
 def copy_exif(source_path, dest_path, exiftool_path, fixed_channel_exif_data=None):
     """Copy over all metadata exactly as it is."""
     command = [
@@ -93,21 +108,6 @@ def copy_exif(source_path, dest_path, exiftool_path, fixed_channel_exif_data=Non
     ]
 
     if fixed_channel_exif_data is not None:
-
-        def _convert_to_degrees(value):
-            """
-            Convert the GPS coordinates stored in the EXIF to degress in float format.
-
-            :param value:
-            :type value: exifread.utils.Ratio
-            :rtype: float
-            """
-            d = float(value.values[0].num) / float(value.values[0].den)
-            m = float(value.values[1].num) / float(value.values[1].den)
-            s = float(value.values[2].num) / float(value.values[2].den)
-
-            return d + (m / 60.0) + (s / 3600.0)
-
         latitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLatitude"])
         longitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLongitude"])
         logger.info(f"Setting coordinates to {latitude}/{longitude}")
