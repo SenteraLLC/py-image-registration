@@ -82,52 +82,41 @@ def load_bgr_image(path):
 
 def copy_exif(source_path, dest_path, exiftool_path, fixed_channel_exif_data=None):
     """Copy over all metadata exactly as it is."""
-    copy_command = subprocess.run(
-        [
-            exiftool_path,
-            "-overwrite_original",
-            "-TagsFromFile",
-            source_path,
-            dest_path,
-            "-xmp",
-            "-exif",
-            "-all",
-        ],
-        capture_output=True,
-    )
+    command = [
+        exiftool_path,
+        "-config",
+        "cfg/exiftool.cfg",
+        "-overwrite_original",
+        "-TagsFromFile",
+        source_path,
+        "-all",
+    ]
 
-    if copy_command.returncode != 0:
-        raise ValueError("Exiftool copy command did not run successfully.")
+    if fixed_channel_exif_data is not None:
 
-    if fixed_channel_exif_data is None:
-        return
+        def _convert_to_degrees(value):
+            """
+            Convert the GPS coordinates stored in the EXIF to degress in float format.
 
-    def _convert_to_degrees(value):
-        """
-        Convert the GPS coordinates stored in the EXIF to degress in float format.
+            :param value:
+            :type value: exifread.utils.Ratio
+            :rtype: float
+            """
+            d = float(value.values[0].num) / float(value.values[0].den)
+            m = float(value.values[1].num) / float(value.values[1].den)
+            s = float(value.values[2].num) / float(value.values[2].den)
 
-        :param value:
-        :type value: exifread.utils.Ratio
-        :rtype: float
-        """
-        d = float(value.values[0].num) / float(value.values[0].den)
-        m = float(value.values[1].num) / float(value.values[1].den)
-        s = float(value.values[2].num) / float(value.values[2].den)
+            return d + (m / 60.0) + (s / 3600.0)
 
-        return d + (m / 60.0) + (s / 3600.0)
-
-    latitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLatitude"])
-    longitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLongitude"])
-    print(f"SETTING COORDS TO {latitude}/{longitude}")
-    edit_command = subprocess.run(
-        [
-            exiftool_path,
-            dest_path,
-            "-overwrite_original",
+        latitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLatitude"])
+        longitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLongitude"])
+        logger.info(f"Setting coordinates to {latitude}/{longitude}")
+        command += [
             f"-gpslatitude={latitude}",
             f"-gpslongitude={longitude}",
         ]
-    )
+    command.append(dest_path)
 
-    if edit_command.returncode != 0:
-        raise ValueError("Exiftool edit command did not run successfully.")
+    results = subprocess.run(command, capture_output=True)
+    if results.returncode != 0:
+        raise ValueError("Exiftool command did not run successfully.")
