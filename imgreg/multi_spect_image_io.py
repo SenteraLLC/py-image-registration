@@ -96,7 +96,7 @@ def _convert_to_degrees(value):
 
 
 def copy_exif(source_path, dest_path, exiftool_path, fixed_channel_exif_data=None):
-    """Copy over all metadata exactly as it is."""
+    """Copy metadata and set lat/lon if necessary."""
     command = [
         exiftool_path,
         "-config",
