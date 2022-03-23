@@ -55,7 +55,13 @@ class SitkRegistration:
         )
         self.metric_vals = {}
 
-    def align(self, multi_ch_image, init_transforms=None, print_output=False):
+    def align(
+        self,
+        multi_ch_image,
+        init_transforms=None,
+        print_output=False,
+        skip_metric_evaluate=True,
+    ):
         """Perform alignment on all channels."""
         # check the inputs are of the right type
         assert isinstance(multi_ch_image, np.ndarray)
@@ -170,6 +176,7 @@ class SitkRegistration:
                         channel_params,
                         original_frame_shape,
                         attempt + 15000,
+                        skip_metric_evaluate=skip_metric_evaluate,
                     )
                     # if no exception has been raised, the alignment succeeded
                     success = True
@@ -267,6 +274,7 @@ class SitkRegistration:
         channel_params,
         img_shape,
         seed,
+        skip_metric_evaluate=True,
     ):
         """Perform alignment on a single channel."""
         reg_method = Sitk.ImageRegistrationMethod()
@@ -318,8 +326,11 @@ class SitkRegistration:
         reg_method.SetOptimizerScalesFromPhysicalShift()
         # reg_method.SetOptimizerScales([1e-5,1e-5,1e-5,1e-5,0.5,0.5])
 
-        # Calulate the initial registration metic (before registration)
-        initial_metric = reg_method.MetricEvaluate(fixed_of, moving_of)
+        # Calulate the initial registration metric (before registration)
+        if skip_metric_evaluate:
+            initial_metric = None
+        else:
+            initial_metric = reg_method.MetricEvaluate(fixed_of, moving_of)
 
         # run registration
         alignment_transform = reg_method.Execute(fixed_op, moving_op)
@@ -332,7 +343,11 @@ class SitkRegistration:
         xform_img = resampler.Execute(moving_of)
 
         # Re-calculate the registration metric (after registration)
-        final_metric = reg_method.MetricEvaluate(fixed_of, xform_img)
+        if skip_metric_evaluate:
+            final_metric = None
+        else:
+            final_metric = reg_method.MetricEvaluate(fixed_of, xform_img)
+
         self.reg_method = None
         return xform_img, (
             reg_method.GetOptimizerStopConditionDescription(),

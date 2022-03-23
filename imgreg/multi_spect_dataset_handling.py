@@ -96,7 +96,12 @@ class DataSetHandler:
                     img_paths[i], ofp, "exiftool", fixed_channel_exif_data
                 )
 
-    def process_all_images(self, use_init_transform=True, update_from_previous=True):
+    def process_all_images(
+        self,
+        use_init_transform=True,
+        update_from_previous=True,
+        skip_metric_evaluate=True,
+    ):
         """Perform registration on all images."""
         # loop through all the loaded image id's
         for img_id in self.sitk_reg_obj.config.image_ids:
@@ -117,7 +122,10 @@ class DataSetHandler:
                     init_xform = None
                 # perform the alignment
                 output_image, results = self.sitk_reg_obj.align(
-                    np_image, init_transforms=init_xform, print_output=True
+                    np_image,
+                    init_transforms=init_xform,
+                    print_output=True,
+                    skip_metric_evaluate=skip_metric_evaluate,
                 )
                 print("Alignment Complete")
                 # if the optimizer's final metric quality is below the min threshold, and we used the init transform
@@ -127,7 +135,10 @@ class DataSetHandler:
                         "Poor Quality Optimization Found, Re-aligning without initial transform"
                     )
                     output_image, results = self.sitk_reg_obj.align(
-                        np_image, init_transforms=None, print_output=True
+                        np_image,
+                        init_transforms=None,
+                        print_output=True,
+                        skip_metric_evaluate=skip_metric_evaluate,
                     )
                     # if the alignment failed again
                     if not self.all_success(results.successful):
