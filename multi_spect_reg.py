@@ -9,4 +9,6 @@ All rights reserved.
 from imgreg import multi_spect_dataset_handling
 
 dataset_handler = multi_spect_dataset_handling.DataSetHandler("cfg/6x_config.ini")
-dataset_handler.process_all_images(use_init_transform=True, update_from_previous=True)
+dataset_handler.process_all_images(
+    use_init_transform=True, update_from_previous=True, skip_metric_evaluate=True
+)

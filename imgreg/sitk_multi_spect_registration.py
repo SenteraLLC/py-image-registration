@@ -60,7 +60,7 @@ class SitkRegistration:
         multi_ch_image,
         init_transforms=None,
         print_output=False,
-        skip_metric_evaluate=False,
+        skip_metric_evaluate=True,
     ):
         """Perform alignment on all channels."""
         # check the inputs are of the right type
@@ -274,7 +274,7 @@ class SitkRegistration:
         channel_params,
         img_shape,
         seed,
-        skip_metric_evaluate=False,
+        skip_metric_evaluate=True,
     ):
         """Perform alignment on a single channel."""
         reg_method = Sitk.ImageRegistrationMethod()

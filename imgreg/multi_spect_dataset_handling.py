@@ -100,7 +100,7 @@ class DataSetHandler:
         self,
         use_init_transform=True,
         update_from_previous=True,
-        skip_metric_evaluate=False,
+        skip_metric_evaluate=True,
     ):
         """Perform registration on all images."""
         # loop through all the loaded image id's
