@@ -108,13 +108,19 @@ def copy_exif(source_path, dest_path, exiftool_path, fixed_channel_exif_data=Non
     ]
 
     if fixed_channel_exif_data is not None:
-        latitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLatitude"])
-        longitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLongitude"])
-        logger.info(f"Setting coordinates to {latitude}/{longitude}")
-        command += [
-            f"-gpslatitude={latitude}",
-            f"-gpslongitude={longitude}",
-        ]
+        try:
+            latitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLatitude"])
+            longitude = _convert_to_degrees(fixed_channel_exif_data["GPS GPSLongitude"])
+            logger.info(f"Setting coordinates to {latitude}/{longitude}")
+            command += [
+                f"-gpslatitude={latitude}",
+                f"-gpslongitude={longitude}",
+            ]
+        except ZeroDivisionError:
+            logger.warning(
+                "Invalid Latitude/Longitude metadata in fixed channel image. ",
+                f"Skipping GPS metadata update for {source_path}",
+            )
     command.append(dest_path)
 
     results = subprocess.run(command, capture_output=True)
