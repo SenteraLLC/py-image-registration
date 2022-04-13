@@ -142,7 +142,7 @@ class DataSetHandler:
                     output_image, results = self.sitk_reg_obj.align(
                         np_image,
                         init_transforms=None,
-                        print_output=True,
+                        print_output=print_output,
                         skip_metric_evaluate=skip_metric_evaluate,
                     )
                     # if the alignment failed again
