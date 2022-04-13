@@ -12,6 +12,7 @@ import traceback
 
 import cv2
 import imgparse
+from tqdm import tqdm
 
 from imgreg import multi_spect_image_io, sitk_multi_spect_registration
 
@@ -101,11 +102,13 @@ class DataSetHandler:
         use_init_transform=True,
         update_from_previous=True,
         skip_metric_evaluate=True,
+        print_output=True,
     ):
         """Perform registration on all images."""
         # loop through all the loaded image id's
-        for img_id in self.sitk_reg_obj.config.image_ids:
-            print("Aligning image ID: %i" % img_id)
+        for img_id in tqdm(self.sitk_reg_obj.config.image_ids, desc="Register"):
+            if print_output:
+                print("Aligning image ID: %i" % img_id)
             # build the output file path
             file_name = "aligned_" + str(img_id)
             # Run the alignment in a try/catch, any exceptions will be printed but ignored
@@ -124,16 +127,18 @@ class DataSetHandler:
                 output_image, results = self.sitk_reg_obj.align(
                     np_image,
                     init_transforms=init_xform,
-                    print_output=True,
+                    print_output=print_output,
                     skip_metric_evaluate=skip_metric_evaluate,
                 )
-                print("Alignment Complete")
+                if print_output:
+                    print("Alignment Complete")
                 # if the optimizer's final metric quality is below the min threshold, and we used the init transform
                 if not self.all_success(results.successful) and init_xform is not None:
                     # Try to align again, without the initial transform
-                    print(
-                        "Poor Quality Optimization Found, Re-aligning without initial transform"
-                    )
+                    if print_output:
+                        print(
+                            "Poor Quality Optimization Found, Re-aligning without initial transform"
+                        )
                     output_image, results = self.sitk_reg_obj.align(
                         np_image,
                         init_transforms=None,
@@ -142,9 +147,10 @@ class DataSetHandler:
                     )
                     # if the alignment failed again
                     if not self.all_success(results.successful):
-                        print(
-                            "Alignment failed again, saving to bad alignment directory"
-                        )
+                        if print_output:
+                            print(
+                                "Alignment failed again, saving to bad alignment directory"
+                            )
                         # this is a misaligned image...
                         self.save_image(
                             output_image,
@@ -156,15 +162,18 @@ class DataSetHandler:
 
                 # if the optimizer's final metric quality is above the min threshold
                 if self.all_success(results.successful):
-                    print("Successul Alignment, saving result")
+                    if print_output:
+                        print("Successul Alignment, saving result")
                     # this is an aligned image
                     self.save_image(output_image, file_name, self.output_path, img_id)
                     # update the init transform if flag is set
                     if update_from_previous:
-                        print("Updating initial transform from previous result")
+                        if print_output:
+                            print("Updating initial transform from previous result")
                         self.set_init_transform_from_prev(results)
                 else:
-                    print("Alignment Failed, Saving to bad alignment directory")
+                    if print_output:
+                        print("Alignment Failed, Saving to bad alignment directory")
                     # this is a misaligned image without an initial transform
                     self.save_image(
                         output_image, file_name, self.bad_alignment_output_path, img_id
