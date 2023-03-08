@@ -10,7 +10,7 @@ numpy = "^1.19.3"
 opencv-python = "^4.5.1"
 SimpleITK = "2.1.1" # Temporarily lock to 2.1.1 because 2.1.1.1 was "yanked"
 matplotlib = "^3.4.1"
-imgparse = {git = "https://github.com/SenteraLLC/py-image-metadata-parser.git", tag = "v1.12.10"}
+imgparse = {git = "ssh://git@github.com/SenteraLLC/py-image-metadata-parser.git", tag = "v1.12.10"}
 pytz = "^2022.1"
 
 [tool.poetry.dev-dependencies]
