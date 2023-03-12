@@ -48,7 +48,7 @@ class DataSetHandler:
                 return False
         return True
 
-    def save_image(self, output_image, file_name, output_path, img_id):
+    def save_image(self, output_image, file_name, output_path, img_id, exiftool_path="exiftool"):
         """Save images in jpg or tif format."""
         img_paths = self.sitk_reg_obj.config.get_img_paths(img_id)
         fixed_path = img_paths[
@@ -62,7 +62,7 @@ class DataSetHandler:
             multi_spect_image_io.save_jpg_image(
                 output_image, output_file_path, [2, 1, 0], 3
             )
-            multi_spect_image_io.copy_exif(fixed_path, output_file_path, "exiftool")
+            multi_spect_image_io.copy_exif(fixed_path, output_file_path, exiftool_path)
         elif self.sitk_reg_obj.config.image_extension == ".tif":
             # copy channel paths dict in case it's edited by rgb_6x code
             channel_paths = self.sitk_reg_obj.config.channel_paths.copy()
@@ -84,7 +84,7 @@ class DataSetHandler:
                 )
                 cv2.imwrite(rgb_file_path, rgb_image)
                 multi_spect_image_io.copy_exif(
-                    rgb_input_path, rgb_file_path, "exiftool", fixed_channel_exif_data
+                    rgb_input_path, rgb_file_path, exiftool_path, fixed_channel_exif_data
                 )
             output_file_paths = [
                 os.path.join(output_path, os.path.split(p)[-1], file_name) + ".tif"
@@ -93,7 +93,7 @@ class DataSetHandler:
             multi_spect_image_io.save_tif_image(output_image, output_file_paths)
             for i, ofp in enumerate(output_file_paths):
                 multi_spect_image_io.copy_exif(
-                    img_paths[i], ofp, "exiftool", fixed_channel_exif_data
+                    img_paths[i], ofp, exiftool_path, fixed_channel_exif_data
                 )
 
     def process_all_images(
@@ -101,6 +101,7 @@ class DataSetHandler:
         use_init_transform=True,
         update_from_previous=True,
         skip_metric_evaluate=True,
+        exiftool_path="exiftool"
     ):
         """Perform registration on all images."""
         # loop through all the loaded image id's
@@ -151,6 +152,7 @@ class DataSetHandler:
                             file_name,
                             self.bad_alignment_output_path,
                             img_id,
+                            exiftool_path
                         )
                         continue
 
@@ -158,7 +160,13 @@ class DataSetHandler:
                 if self.all_success(results.successful):
                     print("Successul Alignment, saving result")
                     # this is an aligned image
-                    self.save_image(output_image, file_name, self.output_path, img_id)
+                    self.save_image(
+                        output_image,
+                        file_name,
+                        self.output_path,
+                        img_id,
+                        exiftool_path
+                    )
                     # update the init transform if flag is set
                     if update_from_previous:
                         print("Updating initial transform from previous result")
@@ -167,7 +175,11 @@ class DataSetHandler:
                     print("Alignment Failed, Saving to bad alignment directory")
                     # this is a misaligned image without an initial transform
                     self.save_image(
-                        output_image, file_name, self.bad_alignment_output_path, img_id
+                        output_image,
+                        file_name,
+                        self.bad_alignment_output_path,
+                        img_id,
+                        exiftool_path
                     )
 
             except RuntimeError as e:
