@@ -164,8 +164,8 @@ class SitkRegistration:
                     aligned_image, ch_results = self.align_channel(
                         fixed_proc,
                         moving_proc,
-                        fixed_orig,
-                        moving_orig,
+                        fixed_orig, #fixed op
+                        moving_orig, #moving op
                         init_tf,
                         channel_params,
                         original_frame_shape,

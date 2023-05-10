@@ -96,9 +96,10 @@ class DataSetHandler:
                     img_paths[i], ofp, "exiftool", fixed_channel_exif_data
                 )
 
-    def process_all_images(self, use_init_transform=True, update_from_previous=True):
+    def process_all_images(self, use_init_transform=True, update_from_previous=True, return_transforms=False):
         """Perform registration on all images."""
         # loop through all the loaded image id's
+        results_list = []
         for img_id in self.sitk_reg_obj.config.image_ids:
             print("Aligning image ID: %i" % img_id)
             # build the output file path
@@ -135,19 +136,21 @@ class DataSetHandler:
                             "Alignment failed again, saving to bad alignment directory"
                         )
                         # this is a misaligned image...
-                        self.save_image(
-                            output_image,
-                            file_name,
-                            self.bad_alignment_output_path,
-                            img_id,
-                        )
+                        if not return_transforms:
+                            self.save_image(
+                                output_image,
+                                file_name,
+                                self.bad_alignment_output_path,
+                                img_id,
+                            )
                         continue
 
                 # if the optimizer's final metric quality is above the min threshold
                 if self.all_success(results.successful):
                     print("Successul Alignment, saving result")
                     # this is an aligned image
-                    self.save_image(output_image, file_name, self.output_path, img_id)
+                    if not return_transforms:
+                        self.save_image(output_image, file_name, self.output_path, img_id)
                     # update the init transform if flag is set
                     if update_from_previous:
                         print("Updating initial transform from previous result")
@@ -155,9 +158,12 @@ class DataSetHandler:
                 else:
                     print("Alignment Failed, Saving to bad alignment directory")
                     # this is a misaligned image without an initial transform
-                    self.save_image(
-                        output_image, file_name, self.bad_alignment_output_path, img_id
-                    )
+                    if not return_transforms:
+                        self.save_image(
+                            output_image, file_name, self.bad_alignment_output_path, img_id
+                        )
+
+                results_list.append((img_id, results))
 
             except RuntimeError as e:
                 print(traceback.format_exc())
@@ -165,3 +171,5 @@ class DataSetHandler:
             except Exception as e:
                 print("Exception Occurred : ", e)
                 print("Failed to process image: ", img_id)
+
+        return results_list
